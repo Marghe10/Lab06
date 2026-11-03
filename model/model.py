@@ -31,11 +31,39 @@ class DepositoStrumenti:
         self._responsabile = responsabile
 
     def get_strumenti(self) -> list[Strumento] | None:
+        connessione=get_connection()
+
+        if connessione is None:
+            return None
+
+        cursore = connessione.cursor(dictionary=True)
+        query = """SELECT * FROM Strumento
+                ORDER BY codice"""
+        cursore.execute(query)
+        righe = cursore.fetchall()
+
+        strumenti = []
+
+        for riga in righe:
+            strumento = Strumento(
+                codice=riga["codice"],
+                tipo=riga["tipo"],
+                marca=riga["marca"],
+                anno_acquisto=riga["anno_acquisto"],
+                valore=riga["valore"],
+                disponibile=bool(riga["disponibile"])
+            )
+
+            strumenti.append(strumento)
+
+        cursore.close()
+        connessione.close()
+        return strumenti
+
         """
             Funzione che legge tutti gli strumenti nel database
             :return: una lista con tutti gli strumenti presenti oppure None
         """
-        # TODO
 
     def cerca_strumenti_per_tipo(self, tipo) -> list[Strumento] | None:
         """
